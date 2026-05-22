@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model admins {
+  id            String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  username      String @unique @db.VarChar
+  password_hash String @db.VarChar
+}
+
+model contents {
+  id                 Int                  @id @default(autoincrement())
+  type               content_type?
+  is_night_content   Boolean?             @default(false)
+  text               String?
+  created_at         DateTime?            @default(now()) @db.Timestamp(6)
+  user_daily_content user_daily_content[]
+  user_favorites     user_favorites[]
+}
+
+model streaks {
+  id_user        String    @id @db.Uuid
+  current_streak Int?      @default(0)
+  last_claim_at  DateTime? @db.Timestamp(6)
+  users          users     @relation(fields: [id_user], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model user_favorites {
+  id_user    String   @db.Uuid
+  content_id Int
+  contents   contents @relation(fields: [content_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users      users    @relation(fields: [id_user], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([id_user, content_id])
+}
+
+model users {
+  id                 String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  created_at         DateTime?            @default(now()) @db.Timestamp(6)
+  timezone           String?              @default("UTC") @db.VarChar(100)
+  streaks            streaks?
+  user_daily_content user_daily_content[]
+  user_favorites     user_favorites[]
+}
+
+model user_daily_content {
+  id         Int      @id @default(autoincrement())
+  id_user    String   @db.Uuid
+  content_id Int
+  date       DateTime @db.Date
+  contents   contents @relation(fields: [content_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users      users    @relation(fields: [id_user], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([id_user, date])
+}
+
+enum content_type {
+  PHRASE
+  TIP
+}
