@@ -1,4 +1,5 @@
-const { saveContent } = require("../service/content.service");
+const contentService =
+    require("../service/content.service");
 
 
 const getDailyContent = async (req, res) => {
@@ -33,7 +34,11 @@ const postSaveContent = async (req, res) => {
         const { userId, contentId } = req.body;
 
         const content =
-            await saveContent(userId, contentId);
+            await contentService
+                .saveContent(
+                    userId,
+                    contentId
+                );
 
         res.status(201).json({
             message: `contenido guardado`,
@@ -46,7 +51,31 @@ const postSaveContent = async (req, res) => {
     }
 }
 
+
+const getSaveContent = async (req, res) => {
+    try {
+        const { userId } = req.params;
+
+        const content =
+            await contentService
+                .viewSaveContent(
+                    userId
+                );
+
+        res.status(200).json({
+            message: "Exito trayendo contenido del usuario",
+            content
+        })
+    } catch (error) {
+        res.status(500).json({
+            error: error.message
+        });
+        console.log(error);
+    }
+}
+
 module.exports = {
+    getSaveContent,
     postSaveContent,
     getDailyContent
 }

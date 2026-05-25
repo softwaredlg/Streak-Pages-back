@@ -54,16 +54,16 @@ const getDailyContent = async (userId, selectedType) => {
     return existing.contents;
   }
 
-  const validTypes =[
+  const validTypes = [
     "PHRASE",
     "TIP"
   ];
 
-    if(!validTypes.includes(selectedType)){
-      throw new Error(
-        "Tipo de contendio invalido"
-      );
-    }
+  if (!validTypes.includes(selectedType)) {
+    throw new Error(
+      "Tipo de contendio invalido"
+    );
+  }
 
   const availableContent =
     await prisma.contents.findMany({
@@ -111,21 +111,37 @@ const saveContent = async (userId, contentId) => {
     }
   });
 
-  if(existing){
+  if (existing) {
     throw new Error("Contenido ya guardado");
   }
 
   const saveContent = await prisma.user_favorites.create({
     data: {
-      id_user:userId,
+      id_user: userId,
       content_id: contentId
     }
   });
 
   return saveContent;
+};
+
+const viewSaveContent = async (userId) => {
+
+  const content = await prisma.user_favorites.findMany({
+    where: {
+      id_user: userId
+    },
+    include: {
+      contents: true
+    }
+  });
+
+  return content;
+
 }
 
 module.exports = {
+  viewSaveContent,
   getDailyContent,
   saveContent
 };

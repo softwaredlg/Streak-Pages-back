@@ -64,7 +64,10 @@ const claimStreak = async (userId) => {
                 }
             });
 
-        return updated;
+        return {
+            message: "Racha iniciada",
+            streak: updated
+        }; 
     }
 
     /* convert last claim */
