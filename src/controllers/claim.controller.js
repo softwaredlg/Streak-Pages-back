@@ -1,5 +1,10 @@
 const claimService =
     require("../service/claim.service");
+const {
+   verifyType
+} = require(
+   "../helpers/verification.service"
+);
 
 const claimDaily =
     async (req, res) => {
@@ -12,7 +17,7 @@ const claimDaily =
             const { type } =
                 req.body;
 
-            if (!type) {
+            if (!verifyType(type)) {
                 return res.status(400).json({
                     error: "el tipo de contenido es requerido"
                 });
