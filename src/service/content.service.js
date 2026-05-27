@@ -32,7 +32,7 @@ const getDailyContent = async (userId, selectedType) => {
     now.getHours();
 
   const isNight =
-    hour >= 17 || hour < 6;
+    hour >= 18 || hour < 6;
 
   const today =
     format(now, "yyyy-MM-dd");
