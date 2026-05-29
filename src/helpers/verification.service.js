@@ -1,4 +1,4 @@
-const verifyType = (type) => {
+const verifyType = (type ) => {
 
     const validTypes = [
         "PHRASE",
