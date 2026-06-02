@@ -20,18 +20,18 @@ app.use("/claim", claimRoutes);
 app.use("/content", contentRoutes);
 
 //TEST
-app.get("/",(req, res) => {
+app.get("/", (req, res) => {
     res.json({
         message: "API WORKS"
     });
 });
 
-app.get("/content", async (req,res) =>{
-    try{
+app.get("/content", async (req, res) => {
+    try {
         const content = await prisma.contents.findMany();
 
         res.json(content);
-    }catch(error){
+    } catch (error) {
         console.log(error);
 
         res.status(500).json({

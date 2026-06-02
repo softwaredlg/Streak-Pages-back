@@ -14,13 +14,19 @@ model admins {
 }
 
 model contents {
-  id                 Int                  @id @default(autoincrement())
-  type               content_type?
-  is_night_content   Boolean?             @default(false)
-  text               String?
-  created_at         DateTime?            @default(now()) @db.Timestamp(6)
-  user_daily_content user_daily_content[]
-  user_favorites     user_favorites[]
+  id               Int           @id @default(autoincrement())
+  type             content_type?
+  is_night_content Boolean?      @default(false)
+  text             String?
+  created_at       DateTime?     @default(now()) @db.Timestamp(6)
+
+  day_phrase_contents user_daily_content[] @relation("DayPhrase")
+  day_tip_contents    user_daily_content[] @relation("DayTip")
+
+  night_phrase_contents user_daily_content[] @relation("NightPhrase")
+  night_tip_contents    user_daily_content[] @relation("NightTip")
+
+  user_favorites user_favorites[]
 }
 
 model streaks {
@@ -49,12 +55,24 @@ model users {
 }
 
 model user_daily_content {
-  id         Int      @id @default(autoincrement())
-  id_user    String   @db.Uuid
-  content_id Int
-  date       DateTime @db.Date
-  contents   contents @relation(fields: [content_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users      users    @relation(fields: [id_user], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id Int @id @default(autoincrement())
+
+  id_user String @db.Uuid
+
+  day_phrase_content_id   Int?
+  day_tip_content_id      Int?
+  night_phrase_content_id Int?
+  night_tip_content_id    Int?
+
+  date DateTime @db.Date
+
+  day_phrase_content contents? @relation("DayPhrase", fields: [day_phrase_content_id], references: [id])
+  day_tip_content    contents? @relation("DayTip", fields: [day_tip_content_id], references: [id])
+
+  night_phrase_content contents? @relation("NightPhrase", fields: [night_phrase_content_id], references: [id])
+  night_tip_content    contents? @relation("NightTip", fields: [night_tip_content_id], references: [id])
+
+  users users @relation(fields: [id_user], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@unique([id_user, date])
 }

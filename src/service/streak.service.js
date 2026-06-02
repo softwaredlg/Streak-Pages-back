@@ -103,7 +103,7 @@ const claimStreak = async (userId) => {
             streak.current_streak + 1;
 
         message =
-          `Actualizando racha, ahora es de ${newStreak}`;
+          `Actualizando racha`;
 
     } else {
 

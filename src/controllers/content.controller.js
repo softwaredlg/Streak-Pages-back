@@ -2,32 +2,25 @@ const contentService =
     require("../service/content.service");
 
 
-const getDailyContent = async (req, res) => {
-
+/*Funcion v2 */
+const getDailyContents = async (req, res) => {
     try {
-
-        const { userId } =
-            req.params;
-
-        const { type } =
-            req.body;
+        const { userId } = req.params;
 
         const content =
             await contentService
-                .getDailyContent(
-                    userId,
-                    type
+                .obtainDailyContents(
+                    userId
                 );
-
-        res.status(200).json(content);
-
-    } catch (error) {
-
+        
+        res.status(200).json(content)
+    }catch(error){
         res.status(500).json({
             error: error.message
         });
     }
-};
+}
+
 
 const postSaveContent = async (req, res) => {
     try {
@@ -74,8 +67,10 @@ const getSaveContent = async (req, res) => {
     }
 }
 
+
+
 module.exports = {
+    getDailyContents,
     getSaveContent,
     postSaveContent,
-    getDailyContent
 }

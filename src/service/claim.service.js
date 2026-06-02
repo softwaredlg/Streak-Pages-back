@@ -4,7 +4,7 @@ require("./streak.service");
 const contentService =
 require("./content.service");
 
-const claimDaily = async (userId, selectedType) => {
+const claimDaily = async (userId) => {
 
     /* process streak */
     const streakResult =
@@ -14,7 +14,7 @@ const claimDaily = async (userId, selectedType) => {
     /* obtain content */
     const content =
       await contentService
-        .getDailyContent(userId, selectedType);
+        .obtainDailyContents(userId)
 
     /* combine response */
     return {

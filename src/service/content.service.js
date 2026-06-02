@@ -4,7 +4,8 @@ const { format } = require("date-fns");
 
 const prisma = require("../config/db");
 
-const getDailyContent = async (userId, selectedType) => {
+/*Funcion v2.1 */
+const obtainDailyContents = async (userId) => {
 
   const user =
     await prisma.users.findUnique({
@@ -22,21 +23,18 @@ const getDailyContent = async (userId, selectedType) => {
   const timezone =
     user.timezone || "UTC";
 
+  /*Get date to validate if content exist in that date */
   const now =
     toZonedTime(
       new Date(),
       timezone
     );
 
-  const hour =
-    now.getHours();
-
-  const isNight =
-    hour >= 18 || hour < 6;
-
   const today =
     format(now, "yyyy-MM-dd");
 
+
+  /*Validate if content exist alreday */
   const existing =
     await prisma.user_daily_content.findUnique({
       where: {
@@ -46,58 +44,140 @@ const getDailyContent = async (userId, selectedType) => {
         }
       },
       include: {
-        contents: true
+        day_phrase_content: true,
+        day_tip_content: true,
+        night_phrase_content: true,
+        night_tip_content: true
       }
     });
 
+
+  /*If exist return that content */
   if (existing) {
-    return existing.contents;
+    return {
+      day: {
+        phrase: existing.day_phrase_content,
+        tip: existing.day_tip_content,
+      },
+      night: {
+        phrase: existing.night_phrase_content,
+        tip: existing.night_tip_content,
+      }
+    };
   }
 
-  const validTypes = [
-    "PHRASE",
-    "TIP"
-  ];
+  /*If not exist obtain content for both turns (night and day) */
 
-  if (!validTypes.includes(selectedType)) {
-    throw new Error(
-      "Tipo de contendio invalido"
-    );
-  }
-
-  const availableContent =
+  /*DAY*/
+  const availableDayPhrase =
     await prisma.contents.findMany({
       where: {
-        is_night_content: isNight,
-        type: selectedType
+        is_night_content: false,
+        type: "PHRASE"
       }
     });
 
-  if (!availableContent.length) {
+  const availableDayTip =
+    await prisma.contents.findMany({
+      where: {
+        is_night_content: false,
+        type: "TIP"
+      }
+    });
 
+  /*Night */
+  const availableNightPhrase =
+    await prisma.contents.findMany({
+      where: {
+        is_night_content: true,
+        type: "PHRASE"
+      }
+    });
+
+  const availableNightTip =
+    await prisma.contents.findMany({
+      where: {
+        is_night_content: true,
+        type: "TIP"
+      }
+    });
+
+  /*Validation the 4 contents are OK */
+  if (
+    !availableDayPhrase.length || !availableDayTip.length ||
+    !availableNightPhrase.length || !availableNightTip.length
+  ) {
     throw new Error(
       "No hay contenido disponible"
     );
   }
 
-  const randomIndex =
+  /*obtain a random phrase and tip for both turns */
+
+  /*Day*/
+  const randomDayPhrase =
+    availableDayPhrase[
     Math.floor(
       Math.random() *
-      availableContent.length
-    );
+      availableDayPhrase.length
+    )
+    ];
 
-  const selectedContent =
-    availableContent[randomIndex];
+  const randomDayTip =
+    availableDayTip[
+    Math.floor(
+      Math.random() *
+      availableDayTip.length
+    )
+    ];
 
+  /*Night */
+  const randomNightPhrase =
+    availableNightPhrase[
+    Math.floor(
+      Math.random() *
+      availableNightPhrase.length
+    )
+    ];
+
+  const randomNightTip =
+    availableNightTip[
+    Math.floor(
+      Math.random() *
+      availableNightTip.length
+    )
+    ];
+
+    /*If content no exist, create content for that day */
   await prisma.user_daily_content.create({
     data: {
       id_user: userId,
-      content_id: selectedContent.id,
+      day_phrase_content_id: 
+        randomDayPhrase.id,
+
+      day_tip_content_id: 
+        randomDayTip.id,
+
+      night_phrase_content_id: 
+        randomNightPhrase.id,
+
+      night_tip_content_id: 
+        randomNightTip.id,
+
       date: new Date(today)
     }
   });
 
-  return selectedContent;
+  return {
+    day: {
+      phrase: randomDayPhrase,
+      tip: randomDayTip,
+    },
+    night: {
+      phrase: randomNightPhrase,
+      tip: randomNightTip,
+    }
+  };
 };
 
 const saveContent = async (userId, contentId) => {
@@ -142,6 +222,6 @@ const viewSaveContent = async (userId) => {
 
 module.exports = {
   viewSaveContent,
-  getDailyContent,
+  obtainDailyContents,
   saveContent
 };
